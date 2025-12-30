@@ -30,11 +30,10 @@ ENV UID=1000
 ENV GID=1000
 ENV UMASK=022
 
-ENV DOWNLOAD_DIR /downloads
-ENV STATE_DIR /downloads/.metube
-ENV TEMP_DIR /downloads
-VOLUME /downloads
-EXPOSE 8081
+ENV DOWNLOAD_DIR /app/data
+ENV STATE_DIR /app/data/.metube
+ENV TEMP_DIR /app/data
+EXPOSE 8080
 
 # Add build-time argument for version
 ARG VERSION=dev
