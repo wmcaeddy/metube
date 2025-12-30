@@ -4,6 +4,7 @@
 import os
 import sys
 import asyncio
+import base64
 from pathlib import Path
 from aiohttp import web
 from aiohttp.log import access_logger
@@ -54,6 +55,8 @@ class Config:
         'MAX_CONCURRENT_DOWNLOADS': 3,
         'LOGLEVEL': 'INFO',
         'ENABLE_ACCESSLOG': 'false',
+        'AUTH_USERNAME': '',
+        'AUTH_PASSWORD': '',
     }
 
     _BOOLEAN = ('DOWNLOAD_DIRS_INDEXABLE', 'CUSTOM_DIRS', 'CREATE_CUSTOM_DIRS', 'DELETE_FILE_ON_TRASHCAN', 'DEFAULT_OPTION_PLAYLIST_STRICT_MODE', 'HTTPS', 'ENABLE_ACCESSLOG')
@@ -113,6 +116,32 @@ class Config:
 
 config = Config()
 
+# HTTP Basic Authentication middleware
+@web.middleware
+async def basic_auth_middleware(request, handler):
+    # Skip auth if not configured
+    if not config.AUTH_USERNAME or not config.AUTH_PASSWORD:
+        return await handler(request)
+
+    # Check Authorization header
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Basic '):
+        try:
+            encoded_credentials = auth_header[6:]
+            decoded = base64.b64decode(encoded_credentials).decode('utf-8')
+            username, password = decoded.split(':', 1)
+            if username == config.AUTH_USERNAME and password == config.AUTH_PASSWORD:
+                return await handler(request)
+        except Exception:
+            pass
+
+    # Return 401 with WWW-Authenticate header
+    return web.Response(
+        status=401,
+        headers={'WWW-Authenticate': 'Basic realm="MeTube"'},
+        text='Unauthorized'
+    )
+
 class ObjectSerializer(json.JSONEncoder):
     def default(self, obj):
         # First try to use __dict__ for custom objects
@@ -129,7 +158,8 @@ class ObjectSerializer(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 serializer = ObjectSerializer()
-app = web.Application()
+middlewares = [basic_auth_middleware] if config.AUTH_USERNAME and config.AUTH_PASSWORD else []
+app = web.Application(middlewares=middlewares)
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 sio.attach(app, socketio_path=config.URL_PREFIX + 'socket.io')
 routes = web.RouteTableDef()
