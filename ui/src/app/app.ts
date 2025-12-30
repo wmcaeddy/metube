@@ -98,7 +98,7 @@ export class App implements AfterViewInit, OnInit {
   faTachometerAlt = faTachometerAlt;
 
   constructor() {
-    this.format = this.cookieService.get('metube_format') || 'any';
+    this.format = this.cookieService.get('metube_format') || 'mp4';
     // Needs to be set or qualities won't automatically be set
     this.setQualities()
     this.quality = this.cookieService.get('metube_quality') || 'best';
