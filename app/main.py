@@ -5,6 +5,8 @@ import os
 import sys
 import asyncio
 import base64
+import hashlib
+import secrets
 from pathlib import Path
 from aiohttp import web
 from aiohttp.log import access_logger
@@ -116,14 +118,31 @@ class Config:
 
 config = Config()
 
-# HTTP Basic Authentication middleware
+# Generate a session token based on credentials (stable across restarts)
+def generate_session_token():
+    if config.AUTH_USERNAME and config.AUTH_PASSWORD:
+        # Create a stable token from credentials
+        data = f"{config.AUTH_USERNAME}:{config.AUTH_PASSWORD}".encode()
+        return hashlib.sha256(data).hexdigest()
+    return None
+
+SESSION_TOKEN = generate_session_token()
+SESSION_COOKIE_NAME = 'metube_session'
+SESSION_MAX_AGE = 30 * 24 * 60 * 60  # 30 days in seconds
+
+# HTTP Basic Authentication middleware with cookie session persistence
 @web.middleware
 async def basic_auth_middleware(request, handler):
     # Skip auth if not configured
     if not config.AUTH_USERNAME or not config.AUTH_PASSWORD:
         return await handler(request)
 
-    # Check Authorization header
+    # Check for valid session cookie first (persists across iOS app switches)
+    session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
+    if session_cookie and session_cookie == SESSION_TOKEN:
+        return await handler(request)
+
+    # Check Authorization header (Basic Auth)
     auth_header = request.headers.get('Authorization', '')
     if auth_header.startswith('Basic '):
         try:
@@ -131,7 +150,16 @@ async def basic_auth_middleware(request, handler):
             decoded = base64.b64decode(encoded_credentials).decode('utf-8')
             username, password = decoded.split(':', 1)
             if username == config.AUTH_USERNAME and password == config.AUTH_PASSWORD:
-                return await handler(request)
+                # Auth successful - set session cookie for persistence
+                response = await handler(request)
+                response.set_cookie(
+                    SESSION_COOKIE_NAME,
+                    SESSION_TOKEN,
+                    max_age=SESSION_MAX_AGE,
+                    httponly=True,
+                    samesite='Lax'
+                )
+                return response
         except Exception:
             pass
 
