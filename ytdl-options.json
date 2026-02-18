@@ -8,6 +8,7 @@
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1"
     },
+    "impersonate": "chrome120",
     "quiet": false,
     "no_color": true,
     "restrictfilenames": true,
