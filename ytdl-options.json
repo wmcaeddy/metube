@@ -1,0 +1,32 @@
+{
+    "http_headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
+    },
+    "quiet": false,
+    "no_color": true,
+    "restrictfilenames": true,
+    "nocheckcertificate": false,
+    "ignoreerrors": false,
+    "logtostderr": false,
+    "format_sort": ["res:desc", "fps:desc", "vcodec:vp9.2", "vcodec:vp9", "vcodec:h264"],
+    "socket_timeout": 30,
+    "socket_timeout_max": 600,
+    "extract_flat": false,
+    "skip_unavailable_fragments": false,
+    "no_warnings": false,
+    "age_limit": 0,
+    "playlistend": -1,
+    "playliststart": 1,
+    "lazy_playlist": false,
+    "noplaylist": false,
+    "sleep_interval": 0,
+    "max_sleep_interval": 0,
+    "format_sort": ["res:desc", "fps:desc", "vcodec:vp9.2", "vcodec:vp9", "vcodec:h264"],
+    "postprocessors": []
+}

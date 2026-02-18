@@ -5,6 +5,14 @@ umask ${UMASK}
 echo "Creating download directory (${DOWNLOAD_DIR}), state directory (${STATE_DIR}), and temp dir (${TEMP_DIR})"
 mkdir -p "${DOWNLOAD_DIR}" "${STATE_DIR}" "${TEMP_DIR}"
 
+# Copy ytdl-options.json if it exists
+if [ -f "/app/ytdl-options.json" ]; then
+    echo "Found ytdl-options.json, setting YTDL_OPTIONS_FILE"
+    export YTDL_OPTIONS_FILE="/app/ytdl-options.json"
+else
+    echo "No ytdl-options.json found, using default configuration"
+fi
+
 if [ `id -u` -eq 0 ] && [ `id -g` -eq 0 ]; then
     if [ "${UID}" -eq 0 ]; then
         echo "Warning: it is not recommended to run as root user, please check your setting of the UID environment variable"

@@ -24,6 +24,7 @@ RUN sed -i 's/\r$//g' docker-entrypoint.sh && \
     mkdir /.cache && chmod 777 /.cache
 
 COPY app ./app
+COPY ytdl-options.json ./
 COPY --from=builder /metube/dist/metube ./ui/dist/metube
 
 ENV UID=1000
